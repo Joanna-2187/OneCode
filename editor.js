@@ -138,18 +138,10 @@ function initEditor() {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
-  const setWidth = (w) => {
-    w = Math.max(200, Math.round(w));
-    $("wrap").style.alignSelf = "flex-end"; // anchor to the right so the left edge moves
-    $("wrap").style.width = w + "px";
-  };
-  // Hover the bar on the editor's left edge (left-right arrows), then click and drag.
-  $("resizer").onpointerdown = (e) => {
-    e.preventDefault();
-    const startX = e.clientX, startW = $("wrap").offsetWidth;
-    $("resizer").setPointerCapture(e.pointerId);
-    $("resizer").onpointermove = (m) => setWidth(startW - (m.clientX - startX));
-    $("resizer").onpointerup = () => { $("resizer").onpointermove = $("resizer").onpointerup = null; };
+  // Same approach as the old height slider: a plain range input, width as % of the pane.
+  $("size").oninput = () => {
+    $("wrap").style.alignSelf = "flex-end"; // anchor right so the left edge moves
+    $("wrap").style.width = $("size").value + "%";
   };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
