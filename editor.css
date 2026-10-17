@@ -1,7 +1,12 @@
 html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: "Segoe UI", sans-serif; font-size: 13px; }
 header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px; }
-#editor { flex: 1; min-height: 300px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+#editor { flex: 1; min-height: 100px; border-top: 1px solid #ccc; }
+#resizer { height: 14px; flex: none; cursor: row-resize; background: #e6e6e6; touch-action: none; user-select: none;
+  display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px; line-height: 1;
+  border-bottom: 1px solid #ccc; transition: background .15s, color .15s; }
+#resizer::before { content: "\2195"; } /* up-down double arrow */
+#resizer:hover, #resizer:active { background: #80397b; color: #fff; }
 button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
 button.secondary { background: #e6e6e6; color: #222; }
 select { padding: 3px; }

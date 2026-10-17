@@ -45,12 +45,13 @@ function buildHtml(code, lang, output) {
   holder.innerHTML = result;
   inlineStyles(holder);
   // One table cell with a background is the most reliable "code block" in OneNote.
-  const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt";
+  const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt;mso-no-proof:yes";
   // OneNote collapses whitespace even inside <pre>, so use divs with <br> and &nbsp;.
   const outHtml = output
     ? `<div style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444">${keepWhitespace(escapeHtml(output))}</div>`
     : "";
-  return `<table style="border-collapse:collapse"><tr><td style="background:#f5f5f5;border:1px solid #ddd;padding:6px 10px">` +
+  // lang=zxx + mso-no-proof stop OneNote's spell-check squiggles under the code.
+  return `<table lang="zxx" spellcheck="false" style="border-collapse:collapse;mso-no-proof:yes"><tr><td lang="zxx" style="background:#f5f5f5;border:1px solid #ddd;padding:6px 10px;mso-no-proof:yes">` +
     `<div style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
     `</td></tr></table>`;
 }
@@ -82,7 +83,12 @@ async function insertIntoPage() {
 // Java can't run in the browser, so code goes to a Judge0 server for compile + run.
 // Swap JUDGE0_URL for a self-hosted instance if the public one is unavailable.
 const JUDGE0_URL = "https://ce.judge0.com";
-const RUNNERS = { java: { id: 62 } }; // 62 = Java (OpenJDK); source is saved as Main.java
+// Judge0 CE language ids. Java source is saved as Main.java.
+const RUNNERS = {
+  java: { id: 62 }, javascript: { id: 63 }, typescript: { id: 74 }, python: { id: 71 },
+  c: { id: 50 }, cpp: { id: 54 }, csharp: { id: 51 }, go: { id: 60 }, rust: { id: 73 },
+  bash: { id: 46 }, sql: { id: 82 },
+};
 
 async function runCode() {
   const lang = $("lang").value;
@@ -90,7 +96,7 @@ async function runCode() {
   const out = $("output");
   out.hidden = false;
   out.className = "";
-  if (!runner) { out.className = "error"; out.textContent = `Running ${LANGS[lang]} isn't supported yet (Java only).`; return; }
+  if (!runner) { out.className = "error"; out.textContent = `Running ${LANGS[lang]} isn't supported.`; return; }
   const code = editor.getValue();
   if (!code.trim()) { out.textContent = "Nothing to run."; return; }
 
@@ -131,6 +137,9 @@ function initEditor() {
       fontSize: 13, scrollBeyondLastLine: false,
       renderValidationDecorations: "off", // no squiggles, any language
     });
+    const off = { noSemanticValidation: true, noSyntaxValidation: true, noSuggestionDiagnostics: true };
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions(off);
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions(off);
     $("lang").onchange = () => monaco.editor.setModelLanguage(editor.getModel(), $("lang").value);
     $("theme").onchange = () => monaco.editor.setTheme($("theme").value);
   });
@@ -138,9 +147,20 @@ function initEditor() {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
-  $("size").oninput = () => {
+  const setHeight = (h) => {
+    h = Math.max(100, Math.min(900, Math.round(h)));
     $("editor").style.flex = "none";
-    $("editor").style.height = $("size").value + "px";
+    $("editor").style.height = h + "px";
+    $("size").value = h;
+  };
+  $("size").oninput = () => setHeight(+$("size").value);
+  // Drag handle under the editor: grab and pull to resize.
+  $("resizer").onpointerdown = (e) => {
+    e.preventDefault();
+    const startY = e.clientY, startH = $("editor").offsetHeight;
+    $("resizer").setPointerCapture(e.pointerId);
+    $("resizer").onpointermove = (m) => setHeight(startH + m.clientY - startY);
+    $("resizer").onpointerup = () => { $("resizer").onpointermove = $("resizer").onpointerup = null; };
   };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
