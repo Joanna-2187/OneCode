@@ -45,14 +45,13 @@ function buildHtml(code, lang, output) {
   holder.innerHTML = result;
   inlineStyles(holder);
   // One table cell with a background is the most reliable "code block" in OneNote.
-  // lang="zxx" (no linguistic content) asks OneNote's spellcheck to leave the code alone.
   const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt";
   // OneNote collapses whitespace even inside <pre>, so use divs with <br> and &nbsp;.
   const outHtml = output
-    ? `<div lang="zxx" style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444">${keepWhitespace(escapeHtml(output))}</div>`
+    ? `<div style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444">${keepWhitespace(escapeHtml(output))}</div>`
     : "";
   return `<table style="border-collapse:collapse"><tr><td style="background:#f5f5f5;border:1px solid #ddd;padding:6px 10px">` +
-    `<div lang="zxx" style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
+    `<div style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
     `</td></tr></table>`;
 }
 
@@ -139,6 +138,10 @@ function initEditor() {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
+  $("size").oninput = () => {
+    $("editor").style.flex = "none";
+    $("editor").style.height = $("size").value + "px";
+  };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
   $("copy").onclick = copyCode;

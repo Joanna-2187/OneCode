@@ -5,6 +5,8 @@ header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px;
 button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
 button.secondary { background: #e6e6e6; color: #222; }
 select { padding: 3px; }
+input[type=range] { flex: 1; min-width: 60px; accent-color: #80397b; }
+body { overflow-y: auto; }
 button.run { background: #107c10; }
 button:disabled { opacity: .6; cursor: default; }
 #output { margin: 0; padding: 6px 8px; max-height: 30%; overflow: auto; background: #1e1e1e; color: #ddd;
