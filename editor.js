@@ -1,6 +1,6 @@
 const LANGS = {
   javascript: "JavaScript", typescript: "TypeScript", python: "Python", java: "Java",
-  csharp: "C#", cpp: "C++", c: "C", go: "Go", rust: "Rust", html: "HTML", css: "CSS",
+  csharp: "C#", cpp: "C++", c: "C", go: "Go", rust: "Rust", r: "R", html: "HTML", css: "CSS",
   sql: "SQL", json: "JSON", bash: "Shell", powershell: "PowerShell", plaintext: "Plain text",
 };
 // highlight.js name where it differs from Monaco's
@@ -127,10 +127,15 @@ function initDialog() {
   Office.context.ui.messageParent(JSON.stringify({ type: "ready" }));
 }
 
-// Java can't run in the browser, so code goes to a Judge0 server for compile + run.
+// Code goes to a Judge0 server for compile + run (ids are Judge0 CE language ids).
 // Swap JUDGE0_URL for a self-hosted instance if the public one is unavailable.
+// HTML, CSS, JSON, PowerShell and plain text have no runner and are insert-only.
 const JUDGE0_URL = "https://ce.judge0.com";
-const RUNNERS = { java: { id: 62 } }; // 62 = Java (OpenJDK); source is saved as Main.java
+const RUNNERS = {
+  java: { id: 62 }, // OpenJDK; source is saved as Main.java
+  javascript: { id: 63 }, typescript: { id: 74 }, python: { id: 71 }, csharp: { id: 51 },
+  cpp: { id: 54 }, c: { id: 50 }, go: { id: 60 }, rust: { id: 73 }, r: { id: 80 }, bash: { id: 46 }, sql: { id: 82 }, // SQLite
+};
 
 async function runCode() {
   const lang = $("lang").value;
@@ -138,7 +143,7 @@ async function runCode() {
   const out = $("output");
   out.hidden = false;
   out.className = "";
-  if (!runner) { out.className = "error"; out.textContent = `Running ${LANGS[lang]} isn't supported yet (Java only).`; return; }
+  if (!runner) { out.className = "error"; out.textContent = `Running ${LANGS[lang]} can't be run here, but you can still insert it.`; return; }
   const code = editor.getValue();
   if (!code.trim()) { out.textContent = "Nothing to run."; return; }
 
