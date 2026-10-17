@@ -138,24 +138,17 @@ function initEditor() {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
-  const setHeight = (h) => {
-    h = Math.max(100, Math.min(900, Math.round(h)));
-    $("wrap").style.flex = "none";
-    $("wrap").style.height = h + "px";
-    $("size").value = h;
-  };
   const setWidth = (w) => {
     w = Math.max(200, Math.round(w));
-    $("wrap").style.alignSelf = "flex-start"; // stop the column layout stretching it
+    $("wrap").style.alignSelf = "flex-end"; // anchor to the right so the left edge moves
     $("wrap").style.width = w + "px";
   };
-  $("size").oninput = () => setHeight(+$("size").value);
-  // Hover the bar on the editor's right edge (left-right arrows), then click and drag.
+  // Hover the bar on the editor's left edge (left-right arrows), then click and drag.
   $("resizer").onpointerdown = (e) => {
     e.preventDefault();
     const startX = e.clientX, startW = $("wrap").offsetWidth;
     $("resizer").setPointerCapture(e.pointerId);
-    $("resizer").onpointermove = (m) => setWidth(startW + m.clientX - startX);
+    $("resizer").onpointermove = (m) => setWidth(startW - (m.clientX - startX));
     $("resizer").onpointerup = () => { $("resizer").onpointermove = $("resizer").onpointerup = null; };
   };
   $("run").onclick = runCode;
