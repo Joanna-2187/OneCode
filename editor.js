@@ -153,16 +153,35 @@ Office.onReady(() => {
   // so the handle draws its own arrows and drag is tracked on the whole document.
   $("resizer").onpointerdown = (e) => {
     e.preventDefault();
-    const startX = e.clientX, startW = $("wrap").offsetWidth;
     document.body.classList.add("resizing"); // stops Monaco swallowing the drag
-    const move = (m) => setWidth(startW - (m.clientX - startX)); // drag left = wider
+    try { $("resizer").setPointerCapture(e.pointerId); } catch {}
+    let timer = null;
+    const stopGrow = () => { clearInterval(timer); timer = null; };
+    // the handle sits on the pane's left edge, so the cursor leaves this iframe when
+    // dragging left and events stop; keep widening while it is held out there
+    const growLeft = () => {
+      if (timer) return;
+      timer = setInterval(() => setWidth($("wrap").offsetWidth + 14), 16);
+    };
+    const move = (m) => {
+      if (m.buttons === 0) return up(); // released outside the iframe
+      stopGrow();
+      // incremental: pull the handle to the cursor, whatever the scroll position
+      const handleX = $("resizer").getBoundingClientRect().left;
+      setWidth($("wrap").offsetWidth + (handleX - m.clientX));
+      if (m.clientX <= 2) growLeft();
+    };
+    const out = (m) => { if (m.clientX <= 2 || m.relatedTarget === null) growLeft(); };
     const up = () => {
+      stopGrow();
       document.body.classList.remove("resizing");
       document.removeEventListener("pointermove", move);
       document.removeEventListener("pointerup", up);
+      document.documentElement.removeEventListener("pointerleave", out);
     };
     document.addEventListener("pointermove", move);
     document.addEventListener("pointerup", up);
+    document.documentElement.addEventListener("pointerleave", out);
   };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
