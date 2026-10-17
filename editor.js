@@ -101,7 +101,7 @@ function applyState(s) {
 function popOut() {
   if (dialog) return setStatus("Large window is already open.");
   const url = location.href.split("?")[0] + "?dialog=1";
-  Office.context.ui.displayDialogAsync(url, { height: 55, width: 45, displayInIframe: false }, (r) => {
+  Office.context.ui.displayDialogAsync(url, { height: 45, width: 45, displayInIframe: false }, (r) => {
     if (r.status !== Office.AsyncResultStatus.Succeeded) return setStatus("Can't open window: " + r.error.message);
     dialog = r.value;
     dialog.addEventHandler(Office.EventType.DialogMessageReceived, (a) => {
@@ -190,51 +190,6 @@ function initEditor(onCreated) {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
-  const setWidth = (w) => {
-    w = Math.max(200, Math.min(2400, Math.round(w)));
-    // right-anchored so the left-edge handle tracks the drag; auto margin collapses
-    // to 0 when wider than the pane, so overflow stays reachable by scrolling right
-    $("wrap").style.flex = "none";
-    $("wrap").style.marginLeft = "auto";
-    $("wrap").style.width = w + "px";
-    // keep the left-edge handle in view as the editor grows past the pane (rtl: scrollLeft <= 0)
-    const se = document.scrollingElement;
-    se.scrollLeft = -Math.max(0, se.scrollWidth - se.clientWidth);
-  };
-  // OneNote's webview doesn't reliably show CSS cursors or honour pointer capture,
-  // so the handle draws its own arrows and drag is tracked on the whole document.
-  $("resizer").onpointerdown = (e) => {
-    e.preventDefault();
-    document.body.classList.add("resizing"); // stops Monaco swallowing the drag
-    try { $("resizer").setPointerCapture(e.pointerId); } catch {}
-    let timer = null;
-    const stopGrow = () => { clearInterval(timer); timer = null; };
-    // the handle sits on the pane's left edge, so the cursor leaves this iframe when
-    // dragging left and events stop; keep widening while it is held out there
-    const growLeft = () => {
-      if (timer) return;
-      timer = setInterval(() => setWidth($("wrap").offsetWidth + 14), 16);
-    };
-    const move = (m) => {
-      if (m.buttons === 0) return up(); // released outside the iframe
-      stopGrow();
-      // incremental: pull the handle to the cursor, whatever the scroll position
-      const handleX = $("resizer").getBoundingClientRect().left;
-      setWidth($("wrap").offsetWidth + (handleX - m.clientX));
-      if (m.clientX <= 2) growLeft();
-    };
-    const out = (m) => { if (m.clientX <= 2 || m.relatedTarget === null) growLeft(); };
-    const up = () => {
-      stopGrow();
-      document.body.classList.remove("resizing");
-      document.removeEventListener("pointermove", move);
-      document.removeEventListener("pointerup", up);
-      document.documentElement.removeEventListener("pointerleave", out);
-    };
-    document.addEventListener("pointermove", move);
-    document.addEventListener("pointerup", up);
-    document.documentElement.addEventListener("pointerleave", out);
-  };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
   $("copy").onclick = copyCode;

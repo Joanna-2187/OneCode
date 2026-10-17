@@ -7,20 +7,14 @@ header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px;
 #editor { flex: 1; min-height: 100px; border-top: 1px solid #ccc; }
 #wrap { display: flex; flex: 1; min-height: 100px; }
 #wrap #editor { flex: 1; min-width: 0; min-height: 0; }
-#resizer { width: 14px; flex: none; cursor: ew-resize; background: #e6e6e6; touch-action: none; user-select: none;
-  display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; }
-#resizer::before { content: "\2194"; } /* left-right arrows, drawn so they show without a cursor */
-#resizer:hover, #resizer:active { background: #80397b; color: #fff; }
-body.resizing { user-select: none; }
-body.resizing #editor { pointer-events: none; }
 button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
 button.secondary { background: #e6e6e6; color: #222; }
 select { padding: 3px; }
 input[type=range] { flex: 1; min-width: 60px; accent-color: #80397b; }
 body { overflow-y: auto; }
 button.run { background: #107c10; }
-/* pop-out dialog: full-size editor, no resize handle or expand button */
-body.dialog #resizer, body.dialog #expand { display: none; }
+/* pop-out dialog: full-size editor, no expand button */
+body.dialog #expand { display: none; }
 body.dialog #done { display: inline-block; }
 button:disabled { opacity: .6; cursor: default; }
 #output { margin: 0; padding: 6px 8px; max-height: 30%; overflow: auto; background: #1e1e1e; color: #ddd;
@@ -28,19 +22,3 @@ button:disabled { opacity: .6; cursor: default; }
 #output.error { color: #f48771; }
 #status { margin-left: auto; color: #555; }
 
-@media (orientation: landscape) and (max-width: 800px), (orientation: portrait) and (max-width: 600px) {
- #resizer {
-    width: 14px;
-    flex: none;
-    order: -1;
-    cursor: ew-resize;
-    background: #e6e6e6;
-    touch-action: none;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    font-size: 12px;
-}/* up-down arrows, drawn so they show without a cursor */
-}
