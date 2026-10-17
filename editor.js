@@ -1,10 +1,10 @@
 const LANGS = {
-  javascript: "JavaScript", typescript: "TypeScript", python: "Python", java: "Java",
-  csharp: "C#", cpp: "C++", c: "C", go: "Go", rust: "Rust", r: "R", html: "HTML", css: "CSS",
-  sql: "SQL", json: "JSON", bash: "Shell", powershell: "PowerShell", plaintext: "Plain text",
+  javascript: "JavaScript", python: "Python", java: "Java",
+  csharp: "C#", cpp: "C++", c: "C", rust: "Rust", r: "R", html: "HTML", css: "CSS",
+  sql: "SQL", json: "JSON", plaintext: "Plain text",
 };
 // highlight.js name where it differs from Monaco's
-const HLJS_NAME = { bash: "bash", powershell: "powershell", html: "xml", plaintext: "plaintext" };
+const HLJS_NAME = { html: "xml", plaintext: "plaintext" };
 
 // OneNote strips CSS classes, so token colours must be inlined.
 const TOKEN_COLORS = {
@@ -129,12 +129,12 @@ function initDialog() {
 
 // Code goes to a Judge0 server for compile + run (ids are Judge0 CE language ids).
 // Swap JUDGE0_URL for a self-hosted instance if the public one is unavailable.
-// HTML, CSS, JSON, PowerShell and plain text have no runner and are insert-only.
+// HTML, CSS, JSON and plain text have no runner and are insert-only.
 const JUDGE0_URL = "https://ce.judge0.com";
 const RUNNERS = {
   java: { id: 62 }, // OpenJDK; source is saved as Main.java
-  javascript: { id: 63 }, typescript: { id: 74 }, python: { id: 71 }, csharp: { id: 51 },
-  cpp: { id: 54 }, c: { id: 50 }, go: { id: 60 }, rust: { id: 73 }, r: { id: 80 }, bash: { id: 46 }, sql: { id: 82 }, // SQLite
+  javascript: { id: 63 }, python: { id: 71 }, csharp: { id: 51 },
+  cpp: { id: 54 }, c: { id: 50 }, rust: { id: 73 }, r: { id: 80 }, sql: { id: 82 }, // SQLite
 };
 
 async function runCode() {
