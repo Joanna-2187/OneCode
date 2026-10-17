@@ -138,10 +138,25 @@ function initEditor() {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
-  // Same approach as the old height slider: a plain range input, width as % of the pane.
-  $("size").oninput = () => {
-    $("wrap").style.alignSelf = "flex-end"; // anchor right so the left edge moves
-    $("wrap").style.width = $("size").value + "%";
+  const setWidth = (w) => {
+    w = Math.max(200, Math.min(2400, Math.round(w)));
+    $("wrap").style.alignSelf = "flex-start";
+    $("wrap").style.width = w + "px"; // may exceed the pane; the page scrolls sideways
+  };
+  // OneNote's webview doesn't reliably show CSS cursors or honour pointer capture,
+  // so the handle draws its own arrows and drag is tracked on the whole document.
+  $("resizer").onpointerdown = (e) => {
+    e.preventDefault();
+    const startX = e.clientX, startW = $("wrap").offsetWidth;
+    document.body.classList.add("resizing"); // stops Monaco swallowing the drag
+    const move = (m) => setWidth(startW - (m.clientX - startX)); // drag left = wider
+    const up = () => {
+      document.body.classList.remove("resizing");
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerup", up);
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
   };
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;

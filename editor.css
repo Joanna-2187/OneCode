@@ -2,8 +2,14 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: "Segoe UI", sans-serif; font-size: 13px; }
 header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px; }
 #editor { flex: 1; min-height: 100px; border-top: 1px solid #ccc; }
-#wrap { display: flex; flex: 1; min-height: 100px; max-width: 100%; }
+#wrap { display: flex; flex: 1; min-height: 100px; }
 #wrap #editor { flex: 1; min-width: 0; min-height: 0; }
+#resizer { width: 14px; flex: none; cursor: ew-resize; background: #e6e6e6; touch-action: none; user-select: none;
+  display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; }
+#resizer::before { content: "\2194"; } /* left-right arrows, drawn so they show without a cursor */
+#resizer:hover, #resizer:active { background: #80397b; color: #fff; }
+body.resizing { user-select: none; }
+body.resizing #editor { pointer-events: none; }
 button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
 button.secondary { background: #e6e6e6; color: #222; }
 select { padding: 3px; }
