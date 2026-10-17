@@ -101,7 +101,7 @@ function applyState(s) {
 function popOut() {
   if (dialog) return setStatus("Large window is already open.");
   const url = location.href.split("?")[0] + "?dialog=1";
-  Office.context.ui.displayDialogAsync(url, { height: 85, width: 85, displayInIframe: false }, (r) => {
+  Office.context.ui.displayDialogAsync(url, { height: 55, width: 45, displayInIframe: false }, (r) => {
     if (r.status !== Office.AsyncResultStatus.Succeeded) return setStatus("Can't open window: " + r.error.message);
     dialog = r.value;
     dialog.addEventHandler(Office.EventType.DialogMessageReceived, (a) => {
