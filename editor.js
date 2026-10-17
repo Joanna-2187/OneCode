@@ -16,8 +16,20 @@ const TOKEN_COLORS = {
   "hljs-meta": "#af00db", "hljs-selector-class": "#800000", "hljs-property": "#001080",
 };
 
+// Starter text per language, in that language's own comment syntax (JSON has no comments).
+const HINT = "Write code here, then click Insert into page";
+const placeholder = (lang) => {
+  if (lang === "json") return "";
+  if (lang === "plaintext") return HINT + "\n";
+  if (lang === "python" || lang === "r") return `# ${HINT}\n`;
+  if (lang === "sql") return `-- ${HINT}\n`;
+  if (lang === "html") return `<!-- ${HINT} -->\n`;
+  if (lang === "css") return `/* ${HINT} */\n`;
+  return `// ${HINT}\n`;
+};
+
 let editor;
-const $ = (id) => document.getElementById(id);
+const $ =(id) => document.getElementById(id);
 
 function setStatus(msg) {
   $("status").textContent = msg;
@@ -179,7 +191,7 @@ function initEditor(onCreated) {
   require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" } });
   require(["vs/editor/editor.main"], () => {
     editor = monaco.editor.create($("editor"), {
-      value: "// Write code here, then click Insert into page\n",
+      value: placeholder("javascript"),
       language: "javascript", automaticLayout: true, minimap: { enabled: false },
       fontSize: 13, scrollBeyondLastLine: false,
       // the pane is narrow and fixed by OneNote, so trim the gutter to leave room for code
@@ -187,7 +199,13 @@ function initEditor(onCreated) {
       wordWrap: "on",
       renderValidationDecorations: "off", // no squiggles, any language
     });
-    $("lang").onchange = () => monaco.editor.setModelLanguage(editor.getModel(), $("lang").value);
+    $("lang").onchange = () => {
+      const lang = $("lang").value;
+      monaco.editor.setModelLanguage(editor.getModel(), lang);
+      // swap the starter comment only if the user hasn't typed anything of their own
+      const v = editor.getValue();
+      if (!v.trim() || Object.keys(LANGS).some((l) => v === placeholder(l))) editor.setValue(placeholder(lang));
+    };
     $("theme").onchange = () => monaco.editor.setTheme($("theme").value);
     if (onCreated) onCreated();
   });
