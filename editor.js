@@ -140,8 +140,14 @@ Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
   const setWidth = (w) => {
     w = Math.max(200, Math.min(2400, Math.round(w)));
-    $("wrap").style.alignSelf = "flex-start";
-    $("wrap").style.width = w + "px"; // may exceed the pane; the page scrolls sideways
+    // right-anchored so the left-edge handle tracks the drag; auto margin collapses
+    // to 0 when wider than the pane, so overflow stays reachable by scrolling right
+    $("wrap").style.flex = "none";
+    $("wrap").style.marginLeft = "auto";
+    $("wrap").style.width = w + "px";
+    // keep the left-edge handle in view as the editor grows past the pane (rtl: scrollLeft <= 0)
+    const se = document.scrollingElement;
+    se.scrollLeft = -Math.max(0, se.scrollWidth - se.clientWidth);
   };
   // OneNote's webview doesn't reliably show CSS cursors or honour pointer capture,
   // so the handle draws its own arrows and drag is tracked on the whole document.
