@@ -19,6 +19,9 @@ select { padding: 3px; }
 input[type=range] { flex: 1; min-width: 60px; accent-color: #80397b; }
 body { overflow-y: auto; }
 button.run { background: #107c10; }
+/* pop-out dialog: full-size editor, no resize handle or expand button */
+body.dialog #resizer, body.dialog #expand { display: none; }
+body.dialog #done { display: inline-block; }
 button:disabled { opacity: .6; cursor: default; }
 #output { margin: 0; padding: 6px 8px; max-height: 30%; overflow: auto; background: #1e1e1e; color: #ddd;
   font: 12px Consolas, "Courier New", monospace; white-space: pre-wrap; }

@@ -73,10 +73,58 @@ async function insertIntoPage() {
   // Runnable languages: run first if there's no up-to-date output, so prints land in the block.
   if (RUNNERS[lang] && !(lastRun && lastRun.code === code && lastRun.lang === lang)) await runCode();
   const ran = lastRun && lastRun.code === code && lastRun.lang === lang;
-  const html = buildHtml(code, lang, ran ? lastRun.text : "");
+  const payload = { code, lang, output: ran ? lastRun.text : "" };
+  // The pop-out dialog has no page access, so the pane does the actual insert.
+  if (IS_DIALOG) Office.context.ui.messageParent(JSON.stringify({ type: "insert", ...payload }));
+  else doInsert(payload);
+}
+
+function doInsert({ code, lang, output }) {
+  const html = buildHtml(code, lang, output);
   Office.context.document.setSelectedDataAsync(html, { coercionType: Office.CoercionType.Html }, (r) => {
     setStatus(r.status === Office.AsyncResultStatus.Succeeded ? "Inserted." : "Failed: " + r.error.message);
   });
+}
+
+// ---- Pop-out window: same page opened in an Office dialog with ?dialog=1 ----
+const IS_DIALOG = new URLSearchParams(location.search).has("dialog");
+let dialog = null;
+
+const state = () => ({ code: editor.getValue(), lang: $("lang").value, theme: $("theme").value });
+function applyState(s) {
+  $("lang").value = s.lang; $("theme").value = s.theme;
+  monaco.editor.setModelLanguage(editor.getModel(), s.lang);
+  monaco.editor.setTheme(s.theme);
+  if (editor.getValue() !== s.code) editor.setValue(s.code);
+}
+
+function popOut() {
+  if (dialog) return setStatus("Large window is already open.");
+  const url = location.href.split("?")[0] + "?dialog=1";
+  Office.context.ui.displayDialogAsync(url, { height: 85, width: 85, displayInIframe: false }, (r) => {
+    if (r.status !== Office.AsyncResultStatus.Succeeded) return setStatus("Can't open window: " + r.error.message);
+    dialog = r.value;
+    dialog.addEventHandler(Office.EventType.DialogMessageReceived, (a) => {
+      const m = JSON.parse(a.message);
+      if (m.type === "ready") dialog.messageChild(JSON.stringify(state()));
+      else if (m.type === "sync") applyState(m);
+      else if (m.type === "insert") { applyState(m); doInsert(m); }
+      else if (m.type === "close") { applyState(m); dialog.close(); dialog = null; }
+    });
+    dialog.addEventHandler(Office.EventType.DialogEventReceived, () => { dialog = null; }); // closed with X
+  });
+}
+
+function initDialog() {
+  document.body.classList.add("dialog");
+  Office.context.ui.addHandlerAsync(Office.EventType.DialogParentMessageReceived, (a) => applyState(JSON.parse(a.message)));
+  const send = (type) => Office.context.ui.messageParent(JSON.stringify({ type, ...state() }));
+  let t;
+  editor.onDidChangeModelContent(() => { clearTimeout(t); t = setTimeout(() => send("sync"), 400); });
+  $("lang").addEventListener("change", () => send("sync"));
+  $("theme").addEventListener("change", () => send("sync"));
+  $("done").onclick = () => send("close");
+  Office.context.ui.messageParent(JSON.stringify({ type: "ready" }));
 }
 
 // Java can't run in the browser, so code goes to a Judge0 server for compile + run.
@@ -122,17 +170,21 @@ async function copyCode() {
   catch { setStatus("Copy blocked."); }
 }
 
-function initEditor() {
+function initEditor(onCreated) {
   require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" } });
   require(["vs/editor/editor.main"], () => {
     editor = monaco.editor.create($("editor"), {
       value: "// Write code here, then click Insert into page\n",
       language: "javascript", automaticLayout: true, minimap: { enabled: false },
       fontSize: 13, scrollBeyondLastLine: false,
+      // the pane is narrow and fixed by OneNote, so trim the gutter to leave room for code
+      glyphMargin: false, folding: false, lineDecorationsWidth: 4, lineNumbersMinChars: 2,
+      wordWrap: "on",
       renderValidationDecorations: "off", // no squiggles, any language
     });
     $("lang").onchange = () => monaco.editor.setModelLanguage(editor.getModel(), $("lang").value);
     $("theme").onchange = () => monaco.editor.setTheme($("theme").value);
+    if (onCreated) onCreated();
   });
 }
 
@@ -186,5 +238,6 @@ Office.onReady(() => {
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
   $("copy").onclick = copyCode;
-  initEditor();
+  $("expand").onclick = popOut;
+  initEditor(IS_DIALOG ? initDialog : null);
 });
