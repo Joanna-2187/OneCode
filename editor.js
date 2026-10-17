@@ -33,7 +33,10 @@ function inlineStyles(root) {
   });
 }
 
-function buildHtml(code, lang) {
+// Last successful run, so Insert can put the print output inside the block.
+let lastRun = null; // { code, lang, text }
+
+function buildHtml(code, lang, output) {
   const holder = document.createElement("div");
   const hl = HLJS_NAME[lang] || lang;
   const result = window.hljs.getLanguage(hl)
@@ -42,15 +45,36 @@ function buildHtml(code, lang) {
   holder.innerHTML = result;
   inlineStyles(holder);
   // One table cell with a background is the most reliable "code block" in OneNote.
+  // lang="zxx" (no linguistic content) asks OneNote's spellcheck to leave the code alone.
+  const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt";
+  // OneNote collapses whitespace even inside <pre>, so use divs with <br> and &nbsp;.
+  const outHtml = output
+    ? `<div lang="zxx" style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444">${keepWhitespace(escapeHtml(output))}</div>`
+    : "";
   return `<table style="border-collapse:collapse"><tr><td style="background:#f5f5f5;border:1px solid #ddd;padding:6px 10px">` +
-    `<pre style="margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt;color:#1f1f1f">${holder.innerHTML}</pre>` +
+    `<div lang="zxx" style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
     `</td></tr></table>`;
 }
 
-function insertIntoPage() {
+// Newlines -> <br>, spaces -> &nbsp;, in text only (never inside tags).
+function keepWhitespace(html) {
+  return html.split(/(<[^>]+>)/)
+    .map((p) => (p.startsWith("<") ? p : p.replace(/\r?\n/g, "<br>").replace(/ /g, "&nbsp;")))
+    .join("");
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+async function insertIntoPage() {
   const code = editor.getValue();
   if (!code.trim()) return setStatus("Nothing to insert.");
-  const html = buildHtml(code, $("lang").value);
+  const lang = $("lang").value;
+  // Runnable languages: run first if there's no up-to-date output, so prints land in the block.
+  if (RUNNERS[lang] && !(lastRun && lastRun.code === code && lastRun.lang === lang)) await runCode();
+  const ran = lastRun && lastRun.code === code && lastRun.lang === lang;
+  const html = buildHtml(code, lang, ran ? lastRun.text : "");
   Office.context.document.setSelectedDataAsync(html, { coercionType: Office.CoercionType.Html }, (r) => {
     setStatus(r.status === Office.AsyncResultStatus.Succeeded ? "Inserted." : "Failed: " + r.error.message);
   });
@@ -85,6 +109,7 @@ async function runCode() {
     out.className = failed ? "error" : "";
     out.textContent = (r.stdout || "") + (failed ? (r.stdout ? "\n" : "") + (r.compile_output || r.stderr || r.message) : "")
       || `(no output) — ${r.status?.description ?? ""}`;
+    lastRun = { code, lang, text: out.textContent };
   } catch (e) {
     out.className = "error";
     out.textContent = "Could not run: " + e.message;
@@ -105,6 +130,7 @@ function initEditor() {
       value: "// Write code here, then click Insert into page\n",
       language: "javascript", automaticLayout: true, minimap: { enabled: false },
       fontSize: 13, scrollBeyondLastLine: false,
+      renderValidationDecorations: "off", // no squiggles, any language
     });
     $("lang").onchange = () => monaco.editor.setModelLanguage(editor.getModel(), $("lang").value);
     $("theme").onchange = () => monaco.editor.setTheme($("theme").value);
