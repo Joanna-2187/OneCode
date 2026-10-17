@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Notes</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header>
+    <select id="lang" aria-label="Language"></select>
+    <select id="theme" aria-label="Editor theme">
+      <option value="vs">Light</option>
+      <option value="vs-dark">Dark</option>
+    </select>
+  </header>
+  <div id="editor"></div>
+  <pre id="output" aria-live="polite" hidden></pre>
+  <footer>
+    <button id="run" class="run">&#9654; Run</button>
+    <button id="insert">Insert into page</button>
+    <button id="copy" class="secondary">Copy</button>
+    <span id="status" role="status"></span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; font-family: "Segoe UI", sans-serif; font-size: 13px; }
+header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px; }
+#editor { flex: 1; min-height: 200px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
+button.secondary { background: #e6e6e6; color: #222; }
+select { padding: 3px; }
+button.run { background: #107c10; }
+button:disabled { opacity: .6; cursor: default; }
+#output { margin: 0; padding: 6px 8px; max-height: 30%; overflow: auto; background: #1e1e1e; color: #ddd;
+  font: 12px Consolas, "Courier New", monospace; white-space: pre-wrap; }
+#output.error { color: #f48771; }
+#status { margin-left: auto; color: #555; }
