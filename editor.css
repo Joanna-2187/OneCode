@@ -8,7 +8,8 @@ button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; 
 button.secondary { background: #e6e6e6; color: #222; }
 select { padding: 3px; }
 input[type=range] { flex: 1; min-width: 60px; accent-color: #80397b; }
-body { overflow-y: auto; }
+body { overflow-y: auto; overflow-x: hidden; } /* page never scrolls sideways, so buttons stay left-anchored */
+header, footer { flex-shrink: 0; justify-content: flex-start; }
 button.run { background: #107c10; }
 /* pop-out dialog: full-size editor, no expand button */
 body.dialog #expand { display: none; }
