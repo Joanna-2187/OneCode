@@ -15,6 +15,9 @@ const TOKEN_COLORS = {
   "hljs-function": "#795e26", "hljs-attr": "#e50000", "hljs-name": "#800000",
   "hljs-tag": "#800000", "hljs-variable": "#001080", "hljs-params": "#001080",
   "hljs-meta": "#af00db", "hljs-selector-class": "#800000", "hljs-property": "#001080",
+  "hljs-attribute": "#e50000", "hljs-selector-id": "#800000", "hljs-selector-tag": "#800000",
+  "hljs-symbol": "#0000ff", "hljs-doctag": "#008000", "hljs-section": "#795e26", "hljs-bullet": "#0000ff",
+  "hljs-template-variable": "#001080", "hljs-selector-attr": "#e50000", "hljs-selector-pseudo": "#d7ba7d",
 };
 
 // Starter text per language, in that language's own comment syntax (JSON has no comments).
@@ -129,11 +132,46 @@ function doInsert({ code, lang, output }) {
 const IS_DIALOG = new URLSearchParams(location.search).has("dialog");
 let dialog = null;
 
+// Themes the whole page (header, footer, buttons) along with the Monaco editor.
+// Explicit token colours (VS Code Light+ / Dark+) so both themes read like a standard IDE.
+let themesDefined = false;
+function defineThemes() {
+  if (themesDefined) return;
+  themesDefined = true;
+  const rules = (c) => [
+    ["comment", c.comment, "italic"], ["keyword", c.keyword], ["keyword.json", c.keyword],
+    ["string", c.string], ["string.escape", c.escape], ["number", c.number],
+    ["type", c.type], ["type.identifier", c.type], ["predefined", c.fn], ["regexp", c.regexp],
+    ["annotation", c.meta], ["metatag", c.meta], ["tag", c.tag], ["attribute.name", c.attr],
+    ["attribute.value", c.string], ["string.key.json", c.attr], ["string.value.json", c.string],
+    ["delimiter.html", c.tag], ["metatag.html", c.tag],
+  ].map(([token, fg, fontStyle]) => ({ token, foreground: fg.slice(1), ...(fontStyle && { fontStyle }) }));
+  monaco.editor.defineTheme("onecode-light", {
+    base: "vs", inherit: true,
+    rules: rules({ comment: "#008000", keyword: "#0000ff", string: "#a31515", escape: "#ee0000", number: "#098658",
+      type: "#267f99", fn: "#795e26", regexp: "#811f3f", meta: "#af00db", tag: "#800000", attr: "#e50000" }),
+    colors: { "editor.background": "#ffffff", "editor.foreground": "#000000" },
+  });
+  monaco.editor.defineTheme("onecode-dark", {
+    base: "vs-dark", inherit: true,
+    rules: rules({ comment: "#6a9955", keyword: "#569cd6", string: "#ce9178", escape: "#d7ba7d", number: "#b5cea8",
+      type: "#4ec9b0", fn: "#dcdcaa", regexp: "#d16969", meta: "#c586c0", tag: "#569cd6", attr: "#9cdcfe" }),
+    colors: { "editor.background": "#1e1e1e", "editor.foreground": "#d4d4d4" },
+  });
+}
+
+function applyTheme(t) {
+  const dark = t === "vs-dark";
+  document.body.classList.toggle("dark", dark);
+  defineThemes();
+  monaco.editor.setTheme(dark ? "onecode-dark" : "onecode-light");
+}
+
 const state = () => ({ code: editor.getValue(), lang: $("lang").value, theme: $("theme").value });
 function applyState(s) {
   $("lang").value = s.lang; $("theme").value = s.theme;
   monaco.editor.setModelLanguage(editor.getModel(), s.lang);
-  monaco.editor.setTheme(s.theme);
+  applyTheme(s.theme);
   if (editor.getValue() !== s.code) editor.setValue(s.code);
 }
 
@@ -233,7 +271,8 @@ function initEditor(onCreated) {
       const v = editor.getValue();
       if (!v.trim() || Object.keys(LANGS).some((l) => v === placeholder(l))) editor.setValue(placeholder(lang));
     };
-    $("theme").onchange = () => monaco.editor.setTheme($("theme").value);
+    $("theme").onchange = () => applyTheme($("theme").value);
+    applyTheme($("theme").value);
     if (onCreated) onCreated();
   });
 }

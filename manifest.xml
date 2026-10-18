@@ -8,7 +8,7 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Joanna Duran</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Code Notes"/>
+  <DisplayName DefaultValue="OneCode"/>
   <Description DefaultValue="Write code in a Monaco editor and insert it, syntax-highlighted, into your OneNote page."/>
   <IconUrl DefaultValue="https://joanna-2187.github.io/OneCode/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://joanna-2187.github.io/OneCode/assets/icon-80.png"/>
@@ -68,8 +68,8 @@
         <bt:Url id="PaneUrl" DefaultValue="https://joanna-2187.github.io/OneCode/editor.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GroupLabel" DefaultValue="Code Notes"/>
-        <bt:String id="ButtonLabel" DefaultValue="Code Editor"/>
+        <bt:String id="GroupLabel" DefaultValue="OneCode"/>
+        <bt:String id="ButtonLabel" DefaultValue="OneCode Editor"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="ButtonTip" DefaultValue="Open the code editor and insert highlighted code into this page."/>

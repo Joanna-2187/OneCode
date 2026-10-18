@@ -22,4 +22,12 @@ button:disabled { opacity: .6; cursor: default; }
 #output::before { content: "Output:\A"; font-weight: bold; }
 #output.error { color: #f48771; }
 #status { margin-left: auto; color: #555; }
+/* dark theme: applied to body by editor.js alongside Monaco's vs-dark */
+body.dark { background: #1e1e1e; color: #ddd; color-scheme: dark; }
+body.dark header, body.dark footer { background: #252526; }
+body.dark #editor { border-top-color: #3c3c3c; }
+body.dark button.secondary { background: #3a3d41; color: #ddd; }
+body.dark select { background: #3c3c3c; color: #ddd; border: 1px solid #555; }
+body.dark #status { color: #aaa; }
+body.dark #output { background: #111; border-top: 1px solid #3c3c3c; }
 
