@@ -3,6 +3,7 @@ const LANGS = {
   csharp: "C#", cpp: "C++", c: "C", rust: "Rust", r: "R", html: "HTML", css: "CSS",
   sql: "SQL", json: "JSON", plaintext: "Plain text",
 };
+const DEFAULT_LANG = "java";
 // highlight.js name where it differs from Monaco's
 const HLJS_NAME = { html: "xml", plaintext: "plaintext" };
 
@@ -192,8 +193,8 @@ function initEditor(onCreated) {
   require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs" } });
   require(["vs/editor/editor.main"], () => {
     editor = monaco.editor.create($("editor"), {
-      value: placeholder("javascript"),
-      language: "javascript", automaticLayout: true, minimap: { enabled: false },
+      value: placeholder(DEFAULT_LANG),
+      language: DEFAULT_LANG, automaticLayout: true, minimap: { enabled: false },
       fontSize: 13, scrollBeyondLastLine: false,
       // the pane is narrow and fixed by OneNote, so trim the gutter to leave room for code
       glyphMargin: false, folding: false, lineDecorationsWidth: 4, lineNumbersMinChars: 2,
@@ -215,6 +216,7 @@ function initEditor(onCreated) {
 
 Office.onReady(() => {
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
+  $("lang").value = DEFAULT_LANG;
   $("run").onclick = runCode;
   $("insert").onclick = insertIntoPage;
   $("copy").onclick = copyCode;
