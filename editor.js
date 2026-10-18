@@ -90,7 +90,23 @@ async function insertIntoPage() {
   const payload = { code, lang, output: ran ? lastRun.text : "" };
   // The pop-out dialog has no page access, so the pane does the actual insert.
   if (IS_DIALOG) Office.context.ui.messageParent(JSON.stringify({ type: "insert", ...payload }));
-  else doInsert(payload);
+  else if (IN_OFFICE) doInsert(payload);
+  else copyFormatted(payload, "Copied — paste into OneNote.");
+}
+
+// Same styled block that Insert puts on the page (colours, grey box, Output), as HTML on
+// the clipboard, so it pastes formatted into OneNote desktop/web, Word, Outlook, etc.
+// Plain text rides along for code editors and other plain-text targets.
+async function copyFormatted({ code, lang, output }, msg = "Copied.") {
+  const html = buildHtml(code, lang, output);
+  const text = output ? `${code}\nOutput:\n${output}` : code;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/html": new Blob([html], { type: "text/html" }),
+      "text/plain": new Blob([text], { type: "text/plain" }),
+    })]);
+    setStatus(msg);
+  } catch { setStatus("Copy blocked."); }
 }
 
 function doInsert({ code, lang, output }) {
@@ -184,9 +200,8 @@ async function runCode() {
   }
 }
 
-async function copyCode() {
-  try { await navigator.clipboard.writeText(editor.getValue()); setStatus("Copied."); }
-  catch { setStatus("Copy blocked."); }
+function copyCode() {
+  copyFormatted({ code: editor.getValue(), lang: $("lang").value, output: "" });
 }
 
 function initEditor(onCreated) {
@@ -214,7 +229,16 @@ function initEditor(onCreated) {
   });
 }
 
-Office.onReady(() => {
+// True inside OneNote; false when editor.html is opened as a normal web page.
+let IN_OFFICE = false;
+
+function start(info) {
+  IN_OFFICE = !!(info && info.host);
+  if (!IN_OFFICE) {
+    document.body.classList.add("web");
+    $("insert").textContent = "Copy for OneNote";
+    $("insert").title = "Copy the formatted code block, then paste it into OneNote";
+  }
   for (const [k, v] of Object.entries(LANGS)) $("lang").add(new Option(v, k));
   $("lang").value = DEFAULT_LANG;
   $("run").onclick = runCode;
@@ -222,4 +246,7 @@ Office.onReady(() => {
   $("copy").onclick = copyCode;
   $("expand").onclick = popOut;
   initEditor(IS_DIALOG ? initDialog : null);
-});
+}
+
+// office.js resolves onReady with host = null outside Office; if it failed to load at all, start anyway.
+if (window.Office) Office.onReady(start); else start(null);
