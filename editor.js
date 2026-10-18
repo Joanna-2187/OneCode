@@ -57,13 +57,14 @@ function buildHtml(code, lang, output) {
   holder.innerHTML = result;
   inlineStyles(holder);
   // One table cell with a background is the most reliable "code block" in OneNote.
-  const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt";
+  // mso-no-proof + lang="zxx" ask Office to skip spell check (no squiggles) inside the block.
+  const pre = "margin:0;font-family:Consolas,'Courier New',monospace;font-size:10pt;mso-no-proof:yes";
   // OneNote collapses whitespace even inside <pre>, so use divs with <br> and &nbsp;.
   const outHtml = output
-    ? `<div style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444"><b>Output:</b><br>${keepWhitespace(escapeHtml(output))}</div>`
+    ? `<div lang="zxx" style="${pre};margin-top:6px;padding-top:6px;border-top:1px solid #ddd;color:#444"><b>Output:</b><br>${keepWhitespace(escapeHtml(output))}</div>`
     : "";
   return `<table style="border-collapse:collapse"><tr><td style="background:#f5f5f5;border:1px solid #ddd;padding:6px 10px">` +
-    `<div style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
+    `<div lang="zxx" style="${pre};color:#1f1f1f">${keepWhitespace(holder.innerHTML)}</div>${outHtml}` +
     `</td></tr></table>`;
 }
 
@@ -196,7 +197,8 @@ function initEditor(onCreated) {
       fontSize: 13, scrollBeyondLastLine: false,
       // the pane is narrow and fixed by OneNote, so trim the gutter to leave room for code
       glyphMargin: false, folding: false, lineDecorationsWidth: 4, lineNumbersMinChars: 2,
-      wordWrap: "on",
+      wordWrap: "off", // long lines scroll sideways instead of wrapping
+      scrollbar: { horizontal: "auto", alwaysConsumeMouseWheel: false },
       renderValidationDecorations: "off", // no squiggles, any language
     });
     $("lang").onchange = () => {
