@@ -18,15 +18,24 @@ const TOKEN_COLORS = {
 };
 
 // Starter text per language, in that language's own comment syntax (JSON has no comments).
-const HINT = "Write code here, then click Insert into page";
+const HINT = ["Write code here, then click Insert into page"];
+// Plain website (not inside OneNote) also points visitors to the add-in.
+const WEB_HINT = [
+  "Write code here, then click Copy for OneNote", "", "",
+  "Download full version for OneNote (web only) by following README instructions", "",
+  "Thanks for visiting :)",
+];
+const comment = (lang, s) => {
+  if (lang === "plaintext") return s;
+  if (lang === "python" || lang === "r") return `# ${s}`;
+  if (lang === "sql") return `-- ${s}`;
+  if (lang === "html") return `<!-- ${s} -->`;
+  if (lang === "css") return `/* ${s} */`;
+  return `// ${s}`;
+};
 const placeholder = (lang) => {
   if (lang === "json") return "";
-  if (lang === "plaintext") return HINT + "\n";
-  if (lang === "python" || lang === "r") return `# ${HINT}\n`;
-  if (lang === "sql") return `-- ${HINT}\n`;
-  if (lang === "html") return `<!-- ${HINT} -->\n`;
-  if (lang === "css") return `/* ${HINT} */\n`;
-  return `// ${HINT}\n`;
+  return (IN_OFFICE ? HINT : WEB_HINT).map((s) => (s ? comment(lang, s) : "")).join("\n") + "\n";
 };
 
 let editor;
