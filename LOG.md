@@ -1,3 +1,7 @@
+
+
+# AI Log
+
 ## 2026-10-14 — Run Java
 Goal: run snippets from the pane, Java first.
 Finding: OneNote desktop can't host Office.js add-ins (web only), so the pane can't run code there.
