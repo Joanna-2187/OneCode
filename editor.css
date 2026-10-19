@@ -4,13 +4,27 @@ header, footer { display: flex; gap: 6px; align-items: center; padding: 6px 8px;
 #editor { flex: 1; min-height: 100px; border-top: 1px solid #ccc; }
 #wrap { display: flex; flex: 1; min-height: 100px; } /* Monaco shows its own bottom scrollbar only when a line overflows */
 #wrap #editor { flex: 1; min-width: 0; min-height: 0; }
-button { padding: 5px 12px; border: 0; border-radius: 2px; background: #80397b; color: #fff; cursor: pointer; }
-button.secondary { background: #e6e6e6; color: #222; }
-select { padding: 3px; }
+button { padding: 6px 14px; border: 2px solid #ff6ec7; border-radius: 10px; background: #ff6ec7; color: #1a0b2e;
+  font-weight: 700; letter-spacing: .3px; cursor: pointer; box-shadow: 0 3px 0 #6a3df0;
+  transition: transform .06s, box-shadow .06s, filter .15s; }
+button:hover:not(:disabled) { filter: brightness(1.1); }
+button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 #6a3df0; }
+button.secondary { background: #14285a; color: #8fd0ff; border-color: #3fa9ff; box-shadow: 0 3px 0 #0a1433; }
+button#insert { background: #7b4dff; border-color: #7b4dff; color: #fff; box-shadow: 0 3px 0 #3d1f9e; }
+button, select { font: inherit; font-weight: 700; letter-spacing: .3px; }
+select { font-weight: 400; padding: 4px 8px; border: 2px solid #3de07a; border-radius: 6px; background: #3de07a; color: #000; box-shadow: 0 3px 0 #1a8a4a; }
+select option { background: #d9ffe8; color: #000; }
+/* customizable select (Chromium 135+): lets the open list get rounded corners; older browsers ignore this */
+@supports (appearance: base-select) {
+  select, select::picker(select) { appearance: base-select; }
+  select::picker(select) { border: 2px solid #3de07a; border-radius: 6px; background: #d9ffe8; padding: 2px; box-shadow: 0 3px 0 #1a8a4a; }
+  select option { border-radius: 4px; padding: 3px 8px; }
+  select option:hover, select option:checked { background: #3de07a; }
+}
 input[type=range] { flex: 1; min-width: 60px; accent-color: #80397b; }
 body { overflow-y: auto; overflow-x: hidden; } /* page never scrolls sideways, so buttons stay left-anchored */
 header, footer { flex-shrink: 0; justify-content: flex-start; }
-button.run { background: #107c10; }
+button.run { background: #3de07a; border-color: #3de07a; color: #07260f; box-shadow: 0 3px 0 #1a8a4a; }
 /* pop-out dialog: full-size editor, no expand button */
 body.dialog #expand { display: none; }
 body.dialog #done { display: inline-block; }
@@ -26,8 +40,37 @@ button:disabled { opacity: .6; cursor: default; }
 body.dark { background: #1e1e1e; color: #ddd; color-scheme: dark; }
 body.dark header, body.dark footer { background: #252526; }
 body.dark #editor { border-top-color: #3c3c3c; }
-body.dark button.secondary { background: #3a3d41; color: #ddd; }
-body.dark select { background: #3c3c3c; color: #ddd; border: 1px solid #555; }
+body.dark select { border-color: #ff6ec7; background: #ff6ec7; color: #000; box-shadow: 0 3px 0 #6a3df0; }
+body.dark select option { background: #ffd6f0; color: #000; }
+@supports (appearance: base-select) {
+  body.dark select::picker(select) { border-color: #ff6ec7; background: #ffd6f0; box-shadow: 0 3px 0 #6a3df0; }
+  body.dark select option:hover, body.dark select option:checked { background: #ff6ec7; }
+}
+/* retro: CRT screen. Builds on body.dark (editor.js sets both classes). */
+body.retro.dark { background: #07040f; color: #3de07a; font-family: "VT323", "Courier New", monospace; font-size: 18px; }
+body.retro.dark header, body.retro.dark footer { background: #0d0620; }
+body.retro.dark #editor { border-top-color: #6a3df0; }
+body.retro.dark button, body.retro.dark select { font-family: "VT323", "Courier New", monospace; font-size: 18px; letter-spacing: .5px; }
+body.retro.dark button, body.retro.dark #status, body.retro.dark #output { text-shadow: 0 0 5px currentColor; }
+body.retro.dark #status { color: #3de07a; }
+body.retro.dark #output { background: #030108; color: #3de07a; border-top: 2px solid #6a3df0; font: 17px "VT323", "Courier New", monospace; }
+body.retro.dark #output.error { color: #ff6ec7; }
+/* brighter, high-contrast buttons: saturated fills with black text, plus a glow */
+body.retro.dark button { background: #ff7ee0; border-color: #ffc2f0; color: #000; box-shadow: 0 3px 0 #a23dff, 0 0 10px #ff7ee088; }
+body.retro.dark button.secondary { background: #5cc8ff; border-color: #bfe8ff; color: #000; box-shadow: 0 3px 0 #1f6fb8, 0 0 10px #5cc8ff88; }
+body.retro.dark button.run { background: #39ff14; border-color: #b6ffa8; color: #000; box-shadow: 0 3px 0 #0c7a1e, 0 0 10px #39ff1488; }
+body.retro.dark button#insert { background: #b794ff; border-color: #e0d0ff; color: #000; box-shadow: 0 3px 0 #6a3df0, 0 0 10px #b794ff88; }
+body.retro.dark button:active:not(:disabled) { box-shadow: 0 0 10px #ffffff55; }
+body.retro.dark button:disabled { opacity: .75; }
+body.retro.dark button { text-shadow: none; font-weight: 700; }
+/* phosphor glow + scanlines + curved-screen vignette over everything, clicks pass through */
+body.retro.dark::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .55) 100%),
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, .22) 3px);
+  animation: crt-flicker 6s infinite; }
+@keyframes crt-flicker { 0%, 100% { opacity: .95; } 50% { opacity: 1; } 52% { opacity: .9; } 54% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { body.retro.dark::after { animation: none; } }
 body.dark #status { color: #aaa; }
 body.dark #output { background: #111; border-top: 1px solid #3c3c3c; }
 

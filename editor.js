@@ -158,13 +158,33 @@ function defineThemes() {
       type: "#4ec9b0", fn: "#dcdcaa", regexp: "#d16969", meta: "#c586c0", tag: "#569cd6", attr: "#9cdcfe" }),
     colors: { "editor.background": "#1e1e1e", "editor.foreground": "#d4d4d4" },
   });
+  // Retro: black editor, neon green text and comments, bright accents for the rest.
+  monaco.editor.defineTheme("onecode-retro", {
+    base: "vs-dark", inherit: true,
+    rules: rules({ comment: "#7dff9b", keyword: "#ff7ee0", string: "#ffe066", escape: "#8fe3ff", number: "#8fe3ff",
+      type: "#5cc8ff", fn: "#ffe0f6", regexp: "#ff7ee0", meta: "#d6b8ff", tag: "#ff7ee0", attr: "#5cc8ff" }),
+    colors: { "editor.background": "#000000", "editor.foreground": "#39ff14",
+      "editorLineNumber.foreground": "#1fa80d", "editorLineNumber.activeForeground": "#39ff14",
+      "editor.lineHighlightBackground": "#04200b", "editor.selectionBackground": "#39ff1455",
+      "editorCursor.foreground": "#39ff14" },
+  });
 }
 
+let defaultFont = null; // Monaco's own font, captured before Retro swaps it out
+const RETRO_FONT = { fontFamily: "'VT323', Consolas, monospace", fontSize: 17 };
+
 function applyTheme(t) {
-  const dark = t === "vs-dark";
-  document.body.classList.toggle("dark", dark);
+  const retro = t === "retro";
+  const dark = t === "vs-dark" || retro;
+  document.body.classList.toggle("dark", dark); // retro builds on the dark styling
+  document.body.classList.toggle("retro", retro);
   defineThemes();
-  monaco.editor.setTheme(dark ? "onecode-dark" : "onecode-light");
+  monaco.editor.setTheme(retro ? "onecode-retro" : dark ? "onecode-dark" : "onecode-light");
+  if (editor) {
+    defaultFont ||= { fontFamily: editor.getOption(monaco.editor.EditorOption.fontFamily), fontSize: 13 };
+    editor.updateOptions(retro ? RETRO_FONT : defaultFont);
+    if (retro && document.fonts) document.fonts.load("17px VT323").then(() => monaco.editor.remapFonts());
+  }
 }
 
 const state = () => ({ code: editor.getValue(), lang: $("lang").value, theme: $("theme").value });

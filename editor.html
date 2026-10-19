@@ -6,14 +6,18 @@
   <title>OneCode</title>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <link rel="icon" type="image/png" href="./assets/icon-16.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
   <link rel="stylesheet" href="editor.css">
 </head>
 <body>
   <header>
-    <select id="lang" aria-label="Language"></select>
-    <select id="theme" aria-label="Editor theme">
+    <select id="lang" aria-label="Language" title="Choose the programming language for syntax colors and Run"></select>
+    <select id="theme" aria-label="Editor theme" title="Switch between Light, Dark and Retro themes">
       <option value="vs">Light</option>
       <option value="vs-dark">Dark</option>
+      <option value="retro">Retro</option>
     </select>
     <button id="expand" class="secondary" title="Open the editor in a large window">&#x2922; Expand</button>
   </header>
@@ -22,10 +26,10 @@
   </div>
   <pre id="output" aria-live="polite" hidden></pre>
   <footer>
-    <button id="run" class="run">&#9654; Run</button>
-    <button id="insert">Insert into page</button>
-    <button id="copy" class="secondary">Copy</button>
-    <button id="done" class="secondary" hidden>Back to pane</button>
+    <button id="run" class="run" title="Run the code">&#9654; Run</button>
+    <button id="insert" title="Insert the code and formatting into OneNote">Insert into page</button>
+    <button id="copy" class="secondary" title="Copy to clipboard">Copy</button>
+    <button id="done" class="secondary" hidden title="Close window">Back to pane</button>
     <span id="status" role="status"></span>
   </footer>
 
